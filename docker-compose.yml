@@ -1,0 +1,22 @@
+# Jenkins lab. Start with:  DOCKER_GID=$(getent group docker | cut -d: -f3) docker compose up -d --build
+services:
+  jenkins:
+    build: ./jenkins
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"        # UI bound to localhost only
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock   # LAB ONLY - root-equivalent access to the host
+    group_add:
+      - "${DOCKER_GID:-999}"         # lets the jenkins user use the Docker socket
+    networks:
+      - cicd-lab
+
+networks:
+  cicd-lab:
+    name: cicd-lab                   # the app containers join this too, so smoke tests can reach them by name
+
+volumes:
+  jenkins_home:
